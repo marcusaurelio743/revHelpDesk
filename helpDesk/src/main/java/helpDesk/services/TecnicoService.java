@@ -6,15 +6,20 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import helpDesk.domain.Pessoa;
 import helpDesk.domain.Tecnico;
 import helpDesk.domain.dtos.TecnicoDTO;
+import helpDesk.repositories.PessoaRepository;
 import helpDesk.repositories.TecnicoRepository;
+import helpDesk.services.exception.DataIntegrityViolationException;
 import helpDesk.services.exception.ObjectNotFundException;
 
 @Service
 public class TecnicoService {
 	@Autowired
 	private TecnicoRepository tecnicoRepository;
+	@Autowired
+	private PessoaRepository pessoaRepository;
 	
 	public Tecnico findById(Integer id) {
 		Optional<Tecnico> obj = tecnicoRepository.findById(id);
@@ -31,9 +36,27 @@ public class TecnicoService {
 		
 		objDto.setId(null);
 		
+		validaPorCpfeEmail(objDto);
+		
 		Tecnico novoTecnico = new Tecnico(objDto);
 		
 		return tecnicoRepository.save(novoTecnico);
 		
 	}
+
+	private void validaPorCpfeEmail(TecnicoDTO objDto) {
+		Optional<Pessoa> obj = pessoaRepository.findByCpf(objDto.getCpf());
+		
+		if(obj.isPresent() && obj.get().getId() != objDto.getId()) {
+			throw new DataIntegrityViolationException("O CPF já Existe no Sistema!!");
+		}
+		
+		obj = pessoaRepository.findByEmail(objDto.getEmail());
+		
+		if(obj.isPresent() && obj.get().getId() != objDto.getId()) {
+			throw new DataIntegrityViolationException("O E-Mail já Existe no Sistema!!");
+		}
+	}
+
+	
 }
