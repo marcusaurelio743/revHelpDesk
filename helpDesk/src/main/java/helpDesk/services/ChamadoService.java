@@ -1,5 +1,6 @@
 package helpDesk.services;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +48,9 @@ public class ChamadoService {
 		if(obj.getId() != null) {
 			chamado.setId(obj.getId());
 		}
+		if(obj.getStatus().equals(2)) {
+			chamado.setDataFechamento(LocalDate.now());
+		}
 		
 		chamado.setTecnico(tecnico);
 		chamado.setCliente(cliente);
@@ -55,5 +59,11 @@ public class ChamadoService {
 		chamado.setTitulo(obj.getTitulo());
 		chamado.setObservacoes(obj.getObservacoes());
 		return chamado;
+	}
+
+	public Chamado update(Integer id, ChamadoDTO chamadoDTO) {
+		chamadoDTO.setId(id);
+		Chamado chamado = newChamado(chamadoDTO);
+		return chamadoRepository.save(chamado);
 	}
 }
